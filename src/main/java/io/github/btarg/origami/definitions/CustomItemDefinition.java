@@ -19,6 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.Registry;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -26,7 +28,7 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class CustomItemDefinition extends BaseCustomDefinition {
     public Map<Enchantment, Integer> enchantments;
-    public Map<Attribute, Map<UUID, AttributeModifier>> attributes;
+    public Map<Attribute, Map<NamespacedKey, AttributeModifier>> attributes;
     public List<ItemFlag> flags = new ArrayList<>();
     public List<PotionEffect> potionEffects = new ArrayList<>();
     public Integer durability;
@@ -78,7 +80,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         meta.addItemFlags(this.flags.toArray(new ItemFlag[0]));
         for (var entry : this.attributes.entrySet()) {
             Attribute attribute = entry.getKey();
-            Map<UUID, AttributeModifier> attributeModifiers = entry.getValue();
+            Map<NamespacedKey, AttributeModifier> attributeModifiers = entry.getValue();
 
             for (AttributeModifier modifier : attributeModifiers.values()) {
                 meta.addAttributeModifier(attribute, modifier);

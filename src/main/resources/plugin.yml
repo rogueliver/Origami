@@ -2,7 +2,7 @@ name: Origami
 version: '${version}'
 author: btarg
 main: io.github.btarg.origami.OrigamiMain
-api-version: '1.20'
+api-version: '1.21'
 description: Easily create custom blocks, items and recipes.
 
 commands:

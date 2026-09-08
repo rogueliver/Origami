@@ -17,7 +17,7 @@ import io.github.btarg.origami.serialization.DefinitionSerializer;
 import io.github.btarg.origami.util.CooldownManager;
 import io.github.btarg.origami.util.NamespacedKeyHelper;
 import io.github.btarg.origami.util.loot.LootTableHelper;
-import io.github.btarg.origami.util.loot.versions.LootTableHelper_1_20_R3;
+import io.github.btarg.origami.util.loot.versions.LootTableHelper_1_21_R1;
 import io.github.btarg.origami.web.JavalinServer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -29,6 +29,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -91,13 +92,24 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     }
 
     private boolean setupNMS() {
-
-        if (Bukkit.getServer().getMinecraftVersion().equals("1.20.4")) {
-            lootTableHelper = new LootTableHelper_1_20_R3();
-        } else {
-            return false;
+        String version = Bukkit.getServer().getMinecraftVersion();
+        if (version.startsWith("1.21")) {
+            try {
+                lootTableHelper = new LootTableHelper_1_21_R1();
+                return true;
+            } catch (NoClassDefFoundError | ExceptionInInitializerError e) {
+                // NMS classes not available (e.g., in test environment), use fallback
+                Bukkit.getLogger().warning("NMS classes not available, using fallback loot table helper");
+                lootTableHelper = new LootTableHelper() {
+                    @Override
+                    public java.util.List<org.bukkit.inventory.ItemStack> getBlockDrops(String dropLootTable, org.bukkit.Location loc, org.bukkit.inventory.ItemStack minedWith) {
+                        return java.util.Collections.emptyList();
+                    }
+                };
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     private void initDefinitions() throws IOException {

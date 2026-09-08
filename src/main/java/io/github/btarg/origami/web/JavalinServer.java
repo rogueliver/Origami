@@ -3,7 +3,7 @@ package io.github.btarg.origami.web;
 import io.github.btarg.origami.OrigamiMain;
 import io.github.btarg.origami.util.ContentPackHelper;
 import io.javalin.Javalin;
-import io.javalin.http.HandlerType;
+import io.javalin.http.Context;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,8 +15,6 @@ import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class JavalinServer {
@@ -27,22 +25,6 @@ public class JavalinServer {
     private static boolean isRunning = false;
     private static Integer port;
 
-    private static List<JavalinHandler> httpHandlers() {
-        List<JavalinHandler> handlerList = new ArrayList<>();
-        handlerList.add(new JavalinHandler(
-                "/api/helloworld",
-                HandlerType.GET,
-                ctx -> ctx.result("hello world!")
-        ));
-        String filenamesAsString = String.join("\n", ContentPackHelper.getAllContentPackNames());
-        handlerList.add(new JavalinHandler(
-                "/api/contentpacks",
-                HandlerType.GET,
-                ctx -> ctx.result(filenamesAsString)
-        ));
-        return handlerList;
-    }
-
     public static void initAndServePack(ResourcePack resourcePack) {
         port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
 
@@ -50,19 +32,29 @@ public class JavalinServer {
             // Only create new instance if not running
             if (!isRunning) {
                 javalin = Javalin.create(config -> {
-                    config.showJavalinBanner = false;
+                    config.startup.showJavalinBanner = false;
+                    config.routes.get("/api/helloworld", ctx -> ctx.result("hello world!"));
+                    
+                    String filenamesAsString = String.join("\n", ContentPackHelper.getAllContentPackNames());
+                    config.routes.get("/api/contentpacks", ctx -> ctx.result(filenamesAsString));
+                    
+                    // Use a path parameter for the dynamic hash
+                    config.routes.get(downloadEndpoint + "{hash}", ctx -> {
+                        String requestedHash = ctx.pathParam("hash");
+                        if (resourcePackHash != null && resourcePackHash.equals(requestedHash)) {
+                            try {
+                                ctx.result(FileUtils.readFileToByteArray(generatedZipFile)).contentType("application/zip");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                ctx.status(500);
+                            }
+                        } else {
+                            ctx.status(404);
+                        }
+                    });
                 }).start(port);
                 isRunning = true;
             }
-
-            // add HTTP handlers
-            httpHandlers().forEach(handler -> {
-                try {
-                    javalin.addHandler(handler.getType(), handler.getPath(), handler.getHandler());
-                } catch (IllegalArgumentException ignored) {
-                    // Probably throwing an error because of reload
-                }
-            });
 
             BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
             resourcePackHash = builtResourcePack.hash();
@@ -80,15 +72,7 @@ public class JavalinServer {
                 return;
             }
 
-            javalin.get(downloadEndpoint + resourcePackHash, ctx -> {
-                try {
-                    ctx.result(FileUtils.readFileToByteArray(generatedZipFile)).contentType("application/zip");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
             Bukkit.getLogger().info("Hosting resource pack at http://localhost:" + port + downloadEndpoint + resourcePackHash);
-
         });
     }
 

@@ -85,8 +85,8 @@ public class CustomBlockDefinition extends BaseCustomDefinition {
                     if (dropStack == null) continue;
 
                     int amount = dropStack.getAmount();
-                    if (minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
-                        amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
+                    if (minedWith.getEnchantments().containsKey(Enchantment.FORTUNE) && this.isAffectedByFortune) {
+                        amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.FORTUNE));
                     }
                     dropStacks.add(new ItemStack(dropStack.getType(), amount));
                 }

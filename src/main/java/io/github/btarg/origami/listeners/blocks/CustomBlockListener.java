@@ -32,6 +32,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
+import org.bukkit.Registry;
+import org.bukkit.NamespacedKey;
 
 import java.util.HashMap;
 import java.util.List;
@@ -109,7 +111,13 @@ public class CustomBlockListener implements Listener {
 
         if (definition.placeSound != null) {
             try {
-                world.playSound(blockLocation, Sound.valueOf(definition.placeSound), 1, 1);
+                NamespacedKey soundKey = NamespacedKey.fromString(definition.placeSound);
+                org.bukkit.Sound sound = Registry.SOUNDS.get(soundKey);
+                if (sound != null) {
+                    world.playSound(blockLocation, sound, 1, 1);
+                } else {
+                    Bukkit.getLogger().warning("Block being placed does not have valid place sound: " + definition.id);
+                }
             } catch (IllegalArgumentException e) {
                 Bukkit.getLogger().warning("Block being placed does not have valid place sound: " + definition.id);
             }
@@ -163,7 +171,13 @@ public class CustomBlockListener implements Listener {
 
         if (definition.breakSound != null && !definition.breakSound.isEmpty()) {
             try {
-                player.getWorld().playSound(e.getBlock().getLocation(), Sound.valueOf(definition.breakSound), 1, 1);
+                NamespacedKey soundKey = NamespacedKey.fromString(definition.breakSound);
+                org.bukkit.Sound sound = Registry.SOUNDS.get(soundKey);
+                if (sound != null) {
+                    player.getWorld().playSound(e.getBlock().getLocation(), sound, 1, 1);
+                } else {
+                    Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
+                }
             } catch (IllegalArgumentException ex) {
                 Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
             }

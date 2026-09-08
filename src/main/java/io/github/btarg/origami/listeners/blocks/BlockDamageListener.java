@@ -55,7 +55,7 @@ public class BlockDamageListener implements Listener {
         BrokenBlock brokenBlock = brokenBlocksService.getBrokenBlock(blockPosition);
         if (brokenBlock == null) return;
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2, -1, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 2, -1, false, false));
         ItemStack playerHand = player.getInventory().getItemInMainHand();
 
         CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);

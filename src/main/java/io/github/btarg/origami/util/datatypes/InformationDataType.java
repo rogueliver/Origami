@@ -1,7 +1,7 @@
 package io.github.btarg.origami.util.datatypes;
 
 import io.github.btarg.origami.blockdata.ChunkBlockInformation;
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
